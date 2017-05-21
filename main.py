@@ -20,10 +20,10 @@ def sleep_my(endSleepTime):
             break
         yield
 
-print("Start waiting")
-for i in sleep_my(time() + 5):
-    pass
-print("End waiting")
+# print("Start waiting")
+# for i in sleep_my(time() + 5):
+#     pass
+# print("End waiting")
 
 
 class CommandProcessor:
@@ -55,8 +55,8 @@ def on_message(topic, msg):
     command_processor.process(message_json['command'], message_json)
 
 
-def connect(server="broker.mqttdashboard.com"):
-    c = MQTTClient("aba-water-client-"+ID, server)
+def connect(server="iot.eclipse.org"):
+    c = MQTTClient("aba-water-client-"+ID, server,1883)
     c.set_callback(on_message)
     c.connect()
     c.subscribe(TOPIC_TO)
