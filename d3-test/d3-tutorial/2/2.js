@@ -1,59 +1,11 @@
+let currentDate = new Date();
 let zoomedDomain;
-let data = [{"date": "2017-05-23T00:48:00.042Z", "price": 3750.7523729179316}, {
-    "date": "2017-05-23T00:48:00.242Z",
-    "price": 4583.519924430146
-}, {"date": "2017-05-23T00:48:00.442Z", "price": 2145.8942565252214}, {
-    "date": "2017-05-23T00:48:00.643Z",
-    "price": 3387.588318533732
-}, {"date": "2017-05-23T00:48:00.842Z", "price": 3908.835931214709}, {
-    "date": "2017-05-23T00:48:01.042Z",
-    "price": 4075.0430377549383
-}, {"date": "2017-05-23T00:48:01.244Z", "price": 1632.135951692778}, {
-    "date": "2017-05-23T00:48:01.442Z",
-    "price": 1274.3265916105684
-}, {"date": "2017-05-23T00:48:01.642Z", "price": 297.13472951311326}, {
-    "date": "2017-05-23T00:48:01.843Z",
-    "price": 2686.953631528086
-}, {"date": "2017-05-23T00:48:02.042Z", "price": 336.09172076612515}, {
-    "date": "2017-05-23T00:48:02.242Z",
-    "price": 2989.9877647900353
-}, {"date": "2017-05-23T00:48:02.442Z", "price": 3814.228075485432}, {
-    "date": "2017-05-23T00:48:02.642Z",
-    "price": 4060.3422034818227
-}, {"date": "2017-05-23T00:48:02.842Z", "price": 4198.655079525078}, {
-    "date": "2017-05-23T00:48:03.042Z",
-    "price": 4008.585361830571
-}, {"date": "2017-05-23T00:48:03.242Z", "price": 3960.0963005487556}, {
-    "date": "2017-05-23T00:48:03.442Z",
-    "price": 2354.011212395537
-}, {"date": "2017-05-23T00:48:03.642Z", "price": 4385.954019710887}, {
-    "date": "2017-05-23T00:48:03.842Z",
-    "price": 1529.1183142169796
-}, {"date": "2017-05-23T00:48:04.042Z", "price": 1417.3946722000874}, {
-    "date": "2017-05-23T00:48:04.242Z",
-    "price": 1185.2718974982902
-}, {"date": "2017-05-23T00:48:04.442Z", "price": 3067.6119179817974}, {
-    "date": "2017-05-23T00:48:04.642Z",
-    "price": 4716.778060115446
-}, {"date": "2017-05-23T00:48:04.842Z", "price": 2424.9844015031154}, {
-    "date": "2017-05-23T00:48:05.042Z",
-    "price": 1410.7133455625897
-}, {"date": "2017-05-23T00:48:05.242Z", "price": 3022.5621663308834}, {
-    "date": "2017-05-23T00:48:05.442Z",
-    "price": 2910.3135901030987
-}, {"date": "2017-05-23T00:48:05.643Z", "price": 3491.1771084672637}, {
-    "date": "2017-05-23T00:48:05.842Z",
-    "price": 2162.7355717985542
-}, {"date": "2017-05-23T00:48:06.042Z", "price": 3705.255387516618}, {
-    "date": "2017-05-23T00:48:06.242Z",
-    "price": 2176.750982173401
-}, {"date": "2017-05-23T00:48:06.442Z", "price": 43.71869101844283}, {
-    "date": "2017-05-23T00:48:06.642Z",
-    "price": 2930.4176454142716
-}, {"date": "2017-05-23T00:48:06.842Z", "price": 3395.7192927079327}].map(el => {
-    el.date = new Date(el.date);
-    return el
-});
+let data = [];
+for (let i = 0; i < 10; i++) {
+    pushGeneratedDatum();
+}
+
+
 let svg = d3.select("svg"),
     margin = {top: 20, right: 20, bottom: 110, left: 40},
     margin2 = {top: 430, right: 20, bottom: 30, left: 40},
@@ -144,14 +96,28 @@ svg.append("rect")
     .call(zoom);
 
 function redraw() {
-    x.domain(d3.extent(data, function (d) {
-        return d.date;
-    }));
-    y.domain([0, d3.max(data, function (d) {
-        return d.price;
-    })]);
-    x2.domain(x.domain());
+    x.domain(d3.extent(data, d => d.date));
+    x2.domain(d3.extent(data, d => d.date));
+    y.domain([0, d3.max(data, d => d.price)]);
+
     y2.domain(y.domain());
+    let xExtent = d3.extent(data, d => d.date);
+    if (zoomedDomain) {
+        if (zoomedDomain[1].getTime() === data[data.length - 2].date) {
+            if (zoomedDomain[0].getTime() === data[0].date) {
+                zoomedDomain = d3.extent(data, d => d.date);
+            } else {
+                let zoomDomainInPixels = zoomedDomain.map(x2);
+                let zoomDomainPixelWidth = zoomDomainInPixels[1] - zoomDomainInPixels[0];
+                let newEnd = x2(data[data.length - 1].date);
+                zoomedDomain = [newEnd - zoomDomainPixelWidth, newEnd].map(x2.invert)
+            }
+        }
+        context.select(".brush").call(brush.move, zoomedDomain.map(x2));
+        x.domain(zoomedDomain)
+
+    }
+
 
     mainPath.attr("d", area);
     focusXaxis.call(focusXaxisGenerator);
@@ -175,19 +141,27 @@ function brushed() {
 function zoomed() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
     let t = d3.event.transform;
-    x.domain(t.rescaleX(x2).domain());
+    zoomedDomain = t.rescaleX(x2).domain();
+    x.domain(zoomedDomain);
     focus.select(".area").attr("d", area);
-    focus.select(".axis--x").call(focusYaxisGenerator);
+    focus.select(".axis--x").call(focusXaxisGenerator);
     context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
 }
 
 redraw();
-// setInterval(function () {
-//     data.push({date: new Date(), price: Math.random() * 5000});
-//     redraw();
-// }, 200);
+setInterval(function () {
+    pushGeneratedDatum();
+    // data.push({date: n-ew Date(), price: Math.random() * 5000});
+    redraw();
+}, 300);
+function pushGeneratedDatum() {
+    let val = Math.random() * 5000;
+    // console.log(currentDate, val);
+    currentDate.setTime(currentDate.getTime() + (1 * 60 * 60 * 1000));
+    data.push({date: currentDate.getTime(), price: val});
+}
 function addData() {
-    data.push({date: new Date(), price: Math.random() * 5000});
+    pushGeneratedDatum();
 
     redraw();
 }
