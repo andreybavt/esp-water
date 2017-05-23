@@ -1,9 +1,9 @@
 let currentDate = new Date();
 let zoomedDomain;
 let data = [];
-for (let i = 0; i < 10; i++) {
-    pushGeneratedDatum();
-}
+// for (let i = 0; i < 10; i++) {
+//     pushGeneratedDatum();
+// }
 
 
 let svg = d3.select("svg"),
@@ -41,7 +41,7 @@ let area = d3.area()
     })
     .y0(height)
     .y1(function (d) {
-        return y(d.price);
+        return y(d.moisture);
     });
 
 let area2 = d3.area()
@@ -51,7 +51,7 @@ let area2 = d3.area()
     })
     .y0(height2)
     .y1(function (d) {
-        return y2(d.price);
+        return y2(d.moisture);
     });
 
 svg.append("defs").append("clipPath")
@@ -98,12 +98,12 @@ svg.append("rect")
 function redraw() {
     x.domain(d3.extent(data, d => d.date));
     x2.domain(d3.extent(data, d => d.date));
-    y.domain([0, d3.max(data, d => d.price)]);
+    y.domain(d3.extent(data, d => d.moisture));
 
     y2.domain(y.domain());
     let xExtent = d3.extent(data, d => d.date);
     if (zoomedDomain) {
-        if (zoomedDomain[1].getTime() === data[data.length - 2].date) {
+        if (zoomedDomain[1].getTime() === data[data.length - 2].date.getTime()) {
             if (zoomedDomain[0].getTime() === data[0].date) {
                 zoomedDomain = d3.extent(data, d => d.date);
             } else {
@@ -148,20 +148,46 @@ function zoomed() {
     context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
 }
 
-redraw();
-setInterval(function () {
-    pushGeneratedDatum();
-    // data.push({date: n-ew Date(), price: Math.random() * 5000});
-    redraw();
-}, 300);
-function pushGeneratedDatum() {
-    let val = Math.random() * 5000;
-    // console.log(currentDate, val);
-    currentDate.setTime(currentDate.getTime() + (1 * 60 * 60 * 1000));
-    data.push({date: currentDate.getTime(), price: val});
-}
-function addData() {
-    pushGeneratedDatum();
 
+let client = new Messaging.Client("broker.mqttdashboard.com", 8000, "aba-water-client-" + parseInt(Math.random() * 100, 10));
+let options = {
+    timeout: 3,
+    onSuccess: function () {
+        console.log("Connected");
+        client.subscribe('ABA/WATER/#', {qos: 0});
+    },
+    onFailure: function (message) {
+        console.log("Connection failed: " + message.errorMessage);
+    }
+};
+client.connect(options);
+
+
+client.onMessageArrived = function (message) {
+    let msgJson = JSON.parse(message.payloadString);
+    // data.push({date: new Date(+msgJson.time), moisture: msgJson.moisture});
+    let item = {date: new Date(+msgJson.time), moisture: Math.random() * 100};
+    console.log(item);
+    data.push(item);
     redraw();
-}
+
+};
+
+
+redraw();
+// setInterval(function () {
+//     pushGeneratedDatum();
+//     // data.push({date: n-ew Date(), moisture: Math.random() * 5000});
+//     redraw();
+// }, 300);
+// function pushGeneratedDatum() {
+//     let val = Math.random() * 5000;
+//     // console.log(currentDate, val);
+//     currentDate.setTime(currentDate.getTime() + (1 * 60 * 60 * 1000));
+//     data.push({date: currentDate.getTime(), moisture: val});
+// }
+// function addData() {
+//     pushGeneratedDatum();
+//
+//     redraw();
+// }
