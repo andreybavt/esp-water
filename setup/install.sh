@@ -17,6 +17,8 @@ echo Run install-packages.py
 ampy --port /dev/ttyUSB0 run ./install-packages.py
 echo Write main.py ...
 ampy --port /dev/ttyUSB0 put ../main.py /main.py
+echo Write wifiConnecter.py ...
+ampy --port /dev/ttyUSB0 put ../wifiConnecter.py /wifiConnecter.py
 echo Reset
 ampy --port /dev/ttyUSB0 reset
 sleep 3

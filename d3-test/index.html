@@ -2,18 +2,27 @@
 <meta charset="utf-8">
 <style>
 
-.area {
-  fill: steelblue;
-  clip-path: url(#clip);
-}
+    .area {
+        fill: steelblue;
+        clip-path: url(#clip);
+    }
 
-.zoom {
-  cursor: move;
-  fill: none;
-  pointer-events: all;
-}
+    .zoom {
+        cursor: move;
+        fill: none;
+        pointer-events: all;
+    }
 
 </style>
 <svg width="960" height="500"></svg>
+<button onclick="function addData() {
+    let val = Math.random() * 10000;
+    console.log(currentDate,val);
+    currentDate.setTime(currentDate.getTime() + (1*60*60*1000));
+    data.push({date: currentDate.getTime(), price: val});
+    redraw();
+}
+addData()">+ Add data
+</button>
 <script src="https://d3js.org/d3.v4.js"></script>
 <script src="app-simple.js"></script>

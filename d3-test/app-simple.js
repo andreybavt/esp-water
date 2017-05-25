@@ -1,3 +1,4 @@
+let currentDate = new Date("01 Jan 2017");
 let svg = d3.select("svg"),
     margin = {top: 20, right: 20, bottom: 110, left: 40},
     margin2 = {top: 430, right: 20, bottom: 30, left: 40},
@@ -90,9 +91,14 @@ let zoomRect = svg.append("rect")
     .attr("class", "zoom")
     .attr("width", width)
     .attr("height", height)
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")").call(zoom);
 let brushEl = context.append("g")
-    .attr("class", "brush");
+    .attr("class", "brush")
+    .call(brush);
+
+
+let zoomedArea;
+
 function redraw() {
     x.domain(d3.extent(data, function (d) {
         return d.date;
@@ -109,24 +115,33 @@ function redraw() {
 
     contextPath.attr("d", area2);
     contextAxisXEl.call(xAxis2);
-    zoomRect.call(zoom);
+
+    if (zoomedArea) {
+        brush.extent(zoomedArea)
+        // brush(brushEl)
+        // brush.event(brushEl)
+           brush(brushEl.transition().duration(500));
+
+      // now fire the brushstart, brushmove, and brushend events
+      // set transition the delay and duration to 0 to draw right away
+      brush.event(brushEl.transition().delay(1000).duration(500))
+    }
 
 
-    brushEl
-        .call(brush)
-        .call(brush.move, x.range());
+    // zoomRect.call(zoom, zoomedArea);
+    // brushEl.call(brush.move, x.range());
 
 }
 // d3.csv("sp500.csv", type, function (error, d) {
 //     d.forEach(el => data.push(el));
 //     redraw()
 // });
-setInterval(function () {
-    let val = Math.random() * 10000;
-    console.log(val);
-    data.push({date: new Date(), price: val});
-    redraw();
-}, 1000);
+// setInterval(function () {
+//     let val = Math.random() * 10000;
+//     console.log(val);
+//     data.push({date: new Date(), price: val});
+//     redraw();
+// }, 1000);
 
 
 function zoomed() {
@@ -136,6 +151,9 @@ function zoomed() {
     focus.select(".area").attr("d", area);
     focus.select(".axis--x").call(xAxis);
     context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
+    zoomedArea = x.range().map(t.invertX, t);
+    console.log('zoomedArea', zoomedArea);
+    // context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
 }
 function brushed() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
@@ -146,4 +164,13 @@ function brushed() {
     svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
         .scale(width / (s[1] - s[0]))
         .translate(-s[0], 0));
+}
+
+for (let i = 1; i < 20; i++) {
+    let val = Math.random() * 10000;
+    console.log(currentDate, val);
+    currentDate.setTime(currentDate.getTime() + (1 * 60 * 60 * 1000));
+    data.push({date: currentDate.getTime(), price: val});
+    redraw();
+
 }
