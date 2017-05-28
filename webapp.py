@@ -2,10 +2,7 @@ from flask import Flask, request, send_from_directory
 import sqlite3
 import json
 from datetime import datetime, timedelta
-import paho.mqtt.client as mqtt
-
-client = mqtt.Client()
-client.connect("test.mosca.io", 1883, 60)
+import paho.mqtt.publish as publish
 
 conn = sqlite3.connect('messages.sqlite')
 
@@ -39,7 +36,8 @@ def water():
     if len(lastWaterDates) < 2 or ('adminKey' in data and data['adminKey'] == 'yesAdmin'):
         c.execute("INSERT INTO waterActions(date, deviceid) VALUES (?,?)", [datetime.now(), device_id])
         conn.commit()
-        client.publish("ABA/WIFINDULA/{0}/TO".format(device_id), json.dumps({'id': device_id, 'command': 'water'}))
+        publish.single("ABA/WIFINDULA/{0}/TO".format(device_id), json.dumps({'id': device_id, 'command': 'water'}),
+                       hostname="test.mosca.io")
         return json.dumps({'status': 'ok', 'text': 'Watered successfully!'})
 
     return json.dumps({'status': 'error',
