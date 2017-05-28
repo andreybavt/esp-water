@@ -1,3 +1,23 @@
+let getUrlParameter = function getUrlParameter(sParam) {
+    let sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+    }
+};
+const ID = getUrlParameter('id');
+
+let onLoad = function () {
+    document.getElementsByClassName('id')[0].innerText = ID;
+};
+
 let currentDate = new Date();
 let zoomedDomain;
 let data = [];
@@ -80,6 +100,12 @@ let focusYaxis = focus.append("g")
 let focusXaxis = focus.append("g")
     .attr("class", "axis axis--x")
     .attr("transform", "translate(0," + height + ")");
+
+svg.append("text")
+    .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
+    .attr("transform", "translate(" + 10 + "," + (height / 2) + ")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
+    .text("Soil moisture");
+
 let contextXaxis = context.append("g")
     .attr("class", "axis axis--x")
     .attr("transform", "translate(0," + height2 + ")");
@@ -88,6 +114,17 @@ context.append("g")
     .attr("class", "brush")
     .call(brush)
     .call(brush.move, x.range());
+
+
+let gridX = svg.append("g")
+    .attr("class", "grid")
+    .attr("transform", "translate(" + margin.left + "," + (margin.top + height) + ")");
+
+let gridY = svg.append("g")
+    .attr("class", "grid")
+    .attr("height", 10)
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
 svg.append("rect")
     .attr("class", "zoom")
     .attr("width", width)
@@ -124,6 +161,18 @@ function redraw() {
     focusYaxis.call(focusYaxisGenerator);
     contextXaxis.call(contextXaxisGenerator);
 
+    gridX
+        .call(d3.axisBottom(x).ticks()
+            .tickSize(-height)
+            .tickFormat("")
+        );
+    gridY
+        .call(d3.axisLeft(y).ticks()
+            .tickSize(-width)
+            .tickFormat("")
+        );
+
+
     contextPath.attr("d", area2);
 }
 
@@ -145,49 +194,46 @@ function zoomed() {
     x.domain(zoomedDomain);
     focus.select(".area").attr("d", area);
     focus.select(".axis--x").call(focusXaxisGenerator);
+    gridX
+        .call(d3.axisBottom(x).ticks()
+            .tickSize(-height)
+            .tickFormat("")
+        );
     context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
 }
 
 
-let client = new Messaging.Client("broker.mqttdashboard.com", 8000, "aba-water-client-" + parseInt(Math.random() * 100, 10));
-let options = {
-    timeout: 3,
-    onSuccess: function () {
-        console.log("Connected");
-        client.subscribe('ABA/WATER/#', {qos: 0});
-    },
-    onFailure: function (message) {
-        console.log("Connection failed: " + message.errorMessage);
+fetch('data/' + ID).then(function (response) {
+    if (response.ok) {
+        return response.json();
     }
-};
-client.connect(options);
 
+}).then(function (archivedData) {
+    archivedData.forEach(d => {
+        data.push({date: new Date(+d.time), moisture: Math.random() * 100});
+    });
+    console.log(data);
+});
 
-client.onMessageArrived = function (message) {
-    let msgJson = JSON.parse(message.payloadString);
+let client = mqtt.connect('mqtt://test.mosca.io:80');
+
+client.on('connect', function () {
+    console.log('connected!');
+    client.subscribe(`ABA/WIFINDULA/${ID}/FROM`);
+});
+
+client.on('message', function (topic, messageArray) {
+    let message = new TextDecoder("utf-8").decode(messageArray);
+    let msgJson = JSON.parse(message);
     // data.push({date: new Date(+msgJson.time), moisture: msgJson.moisture});
     let item = {date: new Date(+msgJson.time), moisture: Math.random() * 100};
-    console.log(item);
     data.push(item);
     redraw();
-
-};
-
+});
 
 redraw();
-// setInterval(function () {
-//     pushGeneratedDatum();
-//     // data.push({date: n-ew Date(), moisture: Math.random() * 5000});
-//     redraw();
-// }, 300);
-// function pushGeneratedDatum() {
-//     let val = Math.random() * 5000;
-//     // console.log(currentDate, val);
-//     currentDate.setTime(currentDate.getTime() + (1 * 60 * 60 * 1000));
-//     data.push({date: currentDate.getTime(), moisture: val});
-// }
-// function addData() {
-//     pushGeneratedDatum();
-//
-//     redraw();
-// }
+
+
+let doWater = function () {
+    client.publish(`ABA/WIFINDULA/${ID}/TO`, JSON.stringify({id: ID, command: 'water'}))
+};

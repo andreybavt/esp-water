@@ -25,6 +25,16 @@ HEADER_ERR = """HTTP/1.0 500 Internal Server Error
 """
 
 
+def read_in_chunks(file_object, chunk_size=1024):
+    """Lazy function (generator) to read a file piece by piece.
+    Default chunk size: 1k."""
+    while True:
+        data = file_object.read(chunk_size)
+        if not data:
+            break
+        yield data
+
+
 def serveConnectToWifiScreen(ID='mock-id', micropython_optimize=True):
     s = socket.socket()
     wifiClient = network.WLAN(network.STA_IF)
@@ -32,7 +42,6 @@ def serveConnectToWifiScreen(ID='mock-id', micropython_optimize=True):
     wifiClient.active(False)
     wifiAP.active(True)
 
-    # Binding to all interfaces - server will be accessible to other hosts!
     ai = socket.getaddrinfo("0.0.0.0", 80)
     print("Bind address info:", ai)
     addr = ai[0][-1]
@@ -41,9 +50,7 @@ def serveConnectToWifiScreen(ID='mock-id', micropython_optimize=True):
     s.bind(addr)
     s.listen(50)
     print("Listening, connect your browser to http://<this_host>:80/")
-    HTML = """<!DOCTYPE html><html lang="en" style="height: 100%"><head> <meta charset="UTF-8"> <style type="text/css"> .success-div{color: green; width: 100%; text-align: center;}.error-div{color: red; width: 100%; text-align: center;}input, select{padding-left: 5px; box-sizing: border-box; height: 30px; width: 100%;}button{height: 30px;}.form-container{width: 400px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; background-color: white; box-shadow: rgb(119, 119, 119) 0px 10px 6px -6px;}body{height: 100%; margin: 0; background-color: #ece9e7;}form{background-color: white;}table{width: 400px; table-layout: fixed;}tr{height: 50px;}td{width: 50%;}form tr td:nth-child(2){text-align: right;}form tr td:nth-child(2) > *{width: 100%}</style> <title>Wifindula</title></head><body><div class="form-container"> <form method="post" id="form"> <table> <tr> <td>Device ID</td><td> <div style="overflow: hidden; text-overflow: ellipsis">{{ID}}</div></td></tr><tr> <td><label for="wifi">Wifi name</label></td><td><select name="wifi" id="wifi" required>{{OPTIONS}}</select></td></tr><tr> <td><label for="password">Password</label></td><td> <div><input type="password" name="password" id="password"></div></td></tr><tr> <td colspan="2"> <button style="width: 100%;" type="submit">Connect</button> </td></tr></table> </form></div><script>let form=document.getElementById('form'); let errDiv=document.createElement("div"); errDiv.setAttribute('class', 'error-div'); function doSubmit(e){errDiv.remove(); if (e.preventDefault) e.preventDefault(); data={}; for (let pair of new FormData(form).entries()){data[pair[0]]=pair[1];}fetch("/connect",{method: "POST", body: JSON.stringify(data)}).then(function (response){if (response.ok){return response.text()}else{response.text().then(errReason=>{errDiv.innerHTML='<code>' + errReason + '</code>'; document.getElementById('form').append(errDiv); return null});}}).then(function (data){if (data){form.remove(); let successDiv=document.createElement("div"); successDiv.setAttribute('class', 'success-div'); successDiv.innerHTML='<h4>Device is connected</h4><a href="{{URL}}">See humidity</a>'; document.getElementsByClassName('form-container')[0].append(successDiv); console.log(data);}});}if (form.attachEvent){form.attachEvent("submit", doSubmit);}else{form.addEventListener("submit", doSubmit);}</script></body></html>"""
 
-    counter = 0
     while True:
         res = s.accept()
         client_sock = res[0]
@@ -69,12 +76,21 @@ def serveConnectToWifiScreen(ID='mock-id', micropython_optimize=True):
                 print('(GET)')
                 readStream(client_stream)
                 client_stream.write(HEADER_OK)
-                rows = ['<option value="%s">%s</option>' % (ap, ap) for ap in scanWifiNetworks(wifiClient)]
-                response = HTML.replace('{{OPTIONS}}', ''.join(rows)) \
-                    .replace("{{ID}}", ID) \
-                    .replace("{{URL}}", ID)
-                for chunk in breakLine(response, 1024):
+                options = ['<option value="%s">%s</option>' % (ap, ap) for ap in scanWifiNetworks(wifiClient)]
+
+                with open('wifi.html', 'r') as f:
+                    for piece in read_in_chunks(f, 20):
+                        client_stream.write(piece)
+
+
+                params = {'ID': ID, 'URL': ID, 'OPTIONS': ''.join(options)}
+
+                fieldReplacementScript = "<script>String.prototype.replaceAll=function (search, replacement){return this.replace(new RegExp(search, 'g'), replacement);}; let bodyHtml=document.body.innerHTML; let data={{DATA}}; Object.entries(data).forEach(e=> bodyHtml=bodyHtml.replaceAll('{{' + e[0] + '}}', e[1])); document.body.innerHTML=bodyHtml;runInit();</script>"
+                fieldReplacementScript = fieldReplacementScript.replace('{{DATA}}', json.dumps(params))
+
+                for chunk in breakLine(fieldReplacementScript, 100):
                     client_stream.write(chunk)
+
         hasInternet = False
         if uri == '/connect' and method == 'POST':
             readStream(client_stream)
@@ -112,10 +128,9 @@ def serveConnectToWifiScreen(ID='mock-id', micropython_optimize=True):
         if hasInternet:
             time.sleep(1)
             wifiAP.active(False)
+            return
         if not micropython_optimize:
             client_sock.close()
-        counter += 1
-        print()
 
 
 def scanWifiNetworks(wifiClient):

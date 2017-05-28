@@ -1,217 +1,218 @@
 <!DOCTYPE html>
 <html lang="en" style="height: 100%">
 
-  <head>
+<head>
     <meta charset="UTF-8">
     <style type="text/css">
-      .success-div {
-        color: green;
-        width: 100%;
-        text-align: center;
-      }
-      
-      .error-div {
-        color: red;
-        width: 100%;
-        text-align: center;
-      }
-      
-      input,
-      select {
-        padding-left: 5px;
-        box-sizing: border-box;
-        height: 30px;
-        width: 100%;
-      }
-      
-      button {
-        height: 30px;
-      }
-      
-      .form-container {
-        width: 400px;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        padding: 20px;
-        background-color: white;
-        box-shadow: rgb(119, 119, 119) 0px 10px 6px -6px;
-      }
-      
-      body {
-        height: 100%;
-        margin: 0;
-        background-color: #ece9e7;
-      }
-      
-      form {
-        background-color: white;
-      }
-      
-      table {
-        width: 400px;
-        table-layout: fixed;
-      }
-      
-      tr {
-        height: 50px;
-      }
-      
-      td {
-        width: 50%;
-      }
-      
-      form tr td:nth-child(2) {
-        text-align: right;
-      }
-      
-      form tr td:nth-child(2) > * {
-        width: 100%
-      }
-      
-      @keyframes blink {
-        0% {
-          opacity: .2;
+        .success-div {
+            color: green;
+            width: 100%;
+            text-align: center;
         }
-        20% {
-          opacity: 1;
+
+        .error-div {
+            color: red;
+            width: 100%;
+            text-align: center;
         }
-        100% {
-          opacity: .2;
+
+        input,
+        select {
+            padding-left: 5px;
+            box-sizing: border-box;
+            height: 30px;
+            width: 100%;
         }
-      }
-      
-      .saving span {
-        animation-name: blink;
-        animation-duration: 1.4s;
-        animation-iteration-count: infinite;
-        animation-fill-mode: both;
-      }
-      
-      .saving span:nth-child(2) {
-        animation-delay: .2s;
-      }
-      
-      .saving span:nth-child(3) {
-        animation-delay: .4s;
-      }
-      
-      .loading-container {
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        background-color: rgba(255, 255, 255, 0.75);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 30px;
-      }
+
+        button {
+            height: 30px;
+        }
+
+        .form-container {
+            width: 400px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: white;
+            box-shadow: rgb(119, 119, 119) 0px 10px 6px -6px;
+        }
+
+        body {
+            height: 100%;
+            margin: 0;
+            background-color: #ece9e7;
+        }
+
+        form {
+            background-color: white;
+        }
+
+        table {
+            width: 400px;
+            table-layout: fixed;
+        }
+
+        tr {
+            height: 50px;
+        }
+
+        td {
+            width: 50%;
+        }
+
+        form tr td:nth-child(2) {
+            text-align: right;
+        }
+
+        form tr td:nth-child(2) > * {
+            width: 100%
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: .2;
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                opacity: .2;
+            }
+        }
+
+        .saving span {
+            animation-name: blink;
+            animation-duration: 1.4s;
+            animation-iteration-count: infinite;
+            animation-fill-mode: both;
+        }
+
+        .saving span:nth-child(2) {
+            animation-delay: .2s;
+        }
+
+        .saving span:nth-child(3) {
+            animation-delay: .4s;
+        }
+
+        .loading-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(255, 255, 255, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
 
     </style>
     <title>Wifindula</title>
-  </head>
+</head>
 
-  <body>
-    <div class="form-container">
+<body>
+<div class="form-container">
 
-      <form method="post" id="form">
+    <form method="post" id="form">
         <table>
-          <tr>
-            <td>Device ID</td>
-            <td>
-              <div style="overflow: hidden; text-overflow: ellipsis">{{ID}}
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <label for="wifi">Wifi name</label>
-            </td>
-            <td>
-              <select name="wifi" id="wifi" required>
-                {{OPTIONS}}
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <label for="password">Password</label>
-            </td>
-            <td>
-              <div>
-                <input type="password" name="password" id="password">
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2">
-              <button style="width: 100%;" type="submit">Connect</button>
-            </td>
-          </tr>
+            <tr>
+                <td>Device ID</td>
+                <td>
+                    <div style="overflow: hidden; text-overflow: ellipsis">{{ID}}
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="wifi">Wifi name</label>
+                </td>
+                <td>
+                    <select name="wifi" id="wifi" required>
+                        {{OPTIONS}}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="password">Password</label>
+                </td>
+                <td>
+                    <div>
+                        <input type="password" name="password" id="password">
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button style="width: 100%;" type="submit">Connect</button>
+                </td>
+            </tr>
         </table>
-      </form>
-    </div>
+    </form>
+</div>
 
-    <script>
-      let form = document.getElementById('form');
-      let errDiv = document.createElement("div");
-      errDiv.setAttribute('class', 'error-div');
-      let loadingDiv = document.createElement("div");
-      loadingDiv.setAttribute('class', 'loading-container');
-      loadingDiv.innerHTML = '<p class="saving">Loading<span>.</span><span>.</span><span>.</span></p>'
+<script>
+    function runInit() {
+        let form = document.getElementById('form');
+        let errDiv = document.createElement("div");
+        errDiv.setAttribute('class', 'error-div');
+        let loadingDiv = document.createElement("div");
+        loadingDiv.setAttribute('class', 'loading-container');
+        loadingDiv.innerHTML = '<p class="saving">Connecting<span>.</span><span>.</span><span>.</span></p>'
 
 
-      function doSubmit(e) {
-        errDiv.remove();
-        if (e.preventDefault) e.preventDefault();
-        data = {};
-        for (let pair of new FormData(form).entries()) {
-          data[pair[0]] = pair[1];
+        function doSubmit(e) {
+            errDiv.remove();
+            if (e.preventDefault) e.preventDefault();
+            data = {};
+            for (let pair of new FormData(form).entries()) {
+                data[pair[0]] = pair[1];
+            }
+
+            document.getElementsByClassName('form-container')[0].append(loadingDiv);
+
+            fetch("/connect", {
+                method: "POST",
+                body: JSON.stringify(data)
+            }).then(function (response) {
+                loadingDiv.remove()
+                if (response.ok) {
+                    return response.text()
+                } else {
+                    response.text().then(errReason => {
+                        errDiv.innerHTML = '<code>' + errReason + '</code>';
+                        document.getElementById('form').append(errDiv);
+                        return null
+                    });
+                }
+            }).then(function (data) {
+                if (data) {
+                    form.remove();
+                    let successDiv = document.createElement("div");
+                    successDiv.setAttribute('class', 'success-div');
+                    successDiv.innerHTML = '<h4>Device is connected</h4><a href="{{URL}}">See humidity</a>';
+                    document.getElementsByClassName('form-container')[0].append(successDiv);
+                    console.log(data);
+                }
+            }).catch(function (error) {
+                console.error('Could not fetch' + error.message);
+                loadingDiv.remove();
+            });
         }
 
-        document.getElementsByClassName('form-container')[0].append(loadingDiv);
+        if (form.attachEvent) {
+            form.attachEvent("submit", doSubmit);
+        } else {
+            form.addEventListener("submit", doSubmit);
+        }
 
-        fetch("http://httpbin.org/get", {
-          method: "POST",
-          body: JSON.stringify(data)
-        }).then(function(response) {
-          loadingDiv.remove()
-          if (response.ok) {
-            return response.text()
-          } else {
-            response.text().then(errReason => {
-              errDiv.innerHTML = '<code>' + errReason + '</code>';
-              document.getElementById('form').append(errDiv);
-              return null
-            });
-          }
-        }).then(function(data) {
-          if (data) {
-            form.remove();
-            let successDiv = document.createElement("div");
-            successDiv.setAttribute('class', 'success-div');
-            successDiv.innerHTML = '<h4>Device is connected</h4><a href="{{URL}}">See humidity</a>';
-            document.getElementsByClassName('form-container')[0].append(successDiv);
-            console.log(data);
-          }
-        }).catch(function(error) {
-          console.error('Could not fetch' + error.message);
-          loadingDiv.remove();
-        });
-      }
+    }
+</script>
 
-      if (form.attachEvent) {
-        form.attachEvent("submit", doSubmit);
-      } else {
-        form.addEventListener("submit", doSubmit);
-
-      }
-
-    </script>
-
-  </body>
+</body>
 
 </html>

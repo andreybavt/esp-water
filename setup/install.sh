@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
+cd /home/andrey/git/python/micropython/esp8266
+make
+cd /home/andrey/git/python/micro/nodemcu/setup
 esptool.py --port /dev/ttyUSB0 erase_flash
-esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dio 0 /home/andrey/Downloads/esp8266-ota-20170520-v1.8.7-778-g338f0849.bin
+esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dio 0 /home/andrey/git/python/micropython/esp8266/build/firmware-combined.bin
 echo Sleep 10 ...
 sleep 10
 echo Reset
@@ -13,12 +16,10 @@ echo Reset
 ampy --port /dev/ttyUSB0 reset
 echo Sleep 10 ...
 sleep 10
-echo Run install-packages.py
-ampy --port /dev/ttyUSB0 run ./install-packages.py
 echo Write main.py ...
 ampy --port /dev/ttyUSB0 put ../main.py /main.py
-echo Write wifiConnecter.py ...
-ampy --port /dev/ttyUSB0 put ../wifiConnecter.py /wifiConnecter.py
+echo Write wifi.html ...
+ampy --port /dev/ttyUSB0 put ../wifi.html /wifi.html
 echo Reset
 ampy --port /dev/ttyUSB0 reset
 sleep 3
