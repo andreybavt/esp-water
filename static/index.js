@@ -235,5 +235,22 @@ redraw();
 
 
 let doWater = function () {
-    client.publish(`ABA/WIFINDULA/${ID}/TO`, JSON.stringify({id: ID, command: 'water'}))
+    fetch("/water", {
+        method: "POST",
+        body: JSON.stringify({id: ID, adminKey: getUrlParameter('adminKey')})
+    }).then(function (response) {
+        if (response.ok) {
+            return response.json();
+        }
+
+    }).then(function (incoming) {
+
+        console.log(incoming);
+        let messageEl = $(`<div class="message ${incoming.status === 'ok' ? 'message-success' : 'message-error'}">	<code>${incoming.text}</code></div>`);
+        el = $('.water-container').append(messageEl)
+        setTimeout(function () {
+            messageEl.remove();
+        }, incoming.status === 'ok' ? 3000 : 5000);
+
+    });
 };
