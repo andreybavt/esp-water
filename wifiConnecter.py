@@ -82,7 +82,6 @@ def serveConnectToWifiScreen(ID='mock-id', micropython_optimize=True):
                     for piece in read_in_chunks(f, 20):
                         client_stream.write(piece)
 
-
                 params = {'ID': ID, 'URL': ID, 'OPTIONS': ''.join(options)}
 
                 fieldReplacementScript = "<script>String.prototype.replaceAll=function (search, replacement){return this.replace(new RegExp(search, 'g'), replacement);}; let bodyHtml=document.body.innerHTML; let data={{DATA}}; Object.entries(data).forEach(e=> bodyHtml=bodyHtml.replaceAll('{{' + e[0] + '}}', e[1])); document.body.innerHTML=bodyHtml;runInit();</script>"
@@ -103,13 +102,13 @@ def serveConnectToWifiScreen(ID='mock-id', micropython_optimize=True):
                 if not wifiClient.isconnected():
                     wifiClient.disconnect()
                 wifiClient.connect(params['wifi'], params['password'])
-                for i in range(20):
-                    print('Checking connection : ' + str(i))
-                    connectionOK = wifiClient.isconnected()
-                    if connectionOK:
-                        break
-                    else:
-                        time.sleep(1)
+
+                while wifiClient.status() == network.STAT_CONNECTING:
+                    print('Trying to connect, status = ' + str(wifiClient.status()))
+                    time.sleep(0.2)
+
+                connectionOK = wifiClient.isconnected()
+                print('connectionOK ' + str(connectionOK))
                 if connectionOK:
                     hasInternet = isConnectedToInternet()
                     if hasInternet:

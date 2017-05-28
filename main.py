@@ -4,18 +4,26 @@ import ubinascii
 import uhashlib
 from uasyncio import sleep, get_event_loop
 from umqtt.simple import MQTTClient
+import network
 
 # READ Startup button configuration
 ledPin = machine.Pin(2, machine.Pin.OUT, machine.Pin.PULL_UP)
 needResetWifi = False
-for i in range(10):
-    needResetWifi = machine.Pin(5, machine.Pin.IN, machine.Pin.PULL_UP).value() == 0
-    ledPin.value(0)
-    utime.sleep(0.1)
-    ledPin.value(1)
-    utime.sleep(0.1)
+
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+isWifiPreset = wlan.status() != network.STAT_IDLE
+print('isWifiPreset: '+str(isWifiPreset))
+if isWifiPreset:
+    for i in range(10):
+        needResetWifi = machine.Pin(5, machine.Pin.IN, machine.Pin.PULL_UP).value() == 0
+        ledPin.value(0)
+        utime.sleep(0.1)
+        ledPin.value(1)
+        utime.sleep(0.1)
 
 ID = ubinascii.hexlify(uhashlib.sha256(machine.unique_id() + 'SALTY-SALT').digest()).decode()
+
 
 def normalBoot():
     import json
@@ -23,6 +31,11 @@ def normalBoot():
     global adc, STARTUP_TIME, time, TOPIC_FROM, TOPIC_TO, command_processor, on_message
 
     print('Normal start')
+
+    wlan = network.WLAN(network.STA_IF)
+    while wlan.status() == network.STAT_CONNECTING:
+        print('WIFI STATUS : {0}'.format(wlan.status()))
+        utime.sleep(0.1)
     adc = machine.ADC(0)
 
     def http_get(url):
@@ -113,7 +126,8 @@ def normalBoot():
     loop.create_task(pub_every(client, 7))
     loop.run_forever()
 
-if needResetWifi:
+
+if needResetWifi or not isWifiPreset:
     from wifiConnecter import serveConnectToWifiScreen
 
     serveConnectToWifiScreen(ID)
