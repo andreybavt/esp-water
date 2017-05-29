@@ -194,7 +194,7 @@
                     form.remove();
                     let successDiv = document.createElement("div");
                     successDiv.setAttribute('class', 'success-div');
-                    successDiv.innerHTML = '<h4>Device is connected</h4><a href="{{URL}}">See humidity</a>';
+                    successDiv.innerHTML = '<h4>Device is connected</h4><a href="'+incomingData.URL+'">See humidity</a>';
                     document.getElementsByClassName('form-container')[0].append(successDiv);
                     console.log(data);
                 }

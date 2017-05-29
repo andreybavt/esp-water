@@ -84,7 +84,7 @@ def serveConnectToWifiScreen(ID='mock-id', micropython_optimize=True):
 
                 params = {'ID': ID, 'URL': 'http://217.182.206.137/?id=' + ID, 'OPTIONS': ''.join(options)}
 
-                fieldReplacementScript = "<script>String.prototype.replaceAll=function (search, replacement){return this.replace(new RegExp(search, 'g'), replacement);}; let bodyHtml=document.body.innerHTML; let data={{DATA}}; Object.entries(data).forEach(e=> bodyHtml=bodyHtml.replaceAll('{{' + e[0] + '}}', e[1])); document.body.innerHTML=bodyHtml;runInit();</script>"
+                fieldReplacementScript = "<script>String.prototype.replaceAll=function (search, replacement){return this.replace(new RegExp(search, 'g'), replacement);}; let bodyHtml=document.body.innerHTML; let incomingData={{DATA}}; Object.entries(incomingData).forEach(e=> bodyHtml=bodyHtml.replaceAll('{{' + e[0] + '}}', e[1])); document.body.innerHTML=bodyHtml;runInit();</script>"
                 fieldReplacementScript = fieldReplacementScript.replace('{{DATA}}', json.dumps(params))
 
                 for chunk in breakLine(fieldReplacementScript, 100):
