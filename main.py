@@ -11,6 +11,8 @@ ledPin = machine.Pin(2, machine.Pin.OUT, machine.Pin.PULL_UP)
 pumpPin = machine.Pin(14, machine.Pin.OUT, machine.Pin.PULL_UP)  # wemos = 5
 waterLimitPin = machine.Pin(12, machine.Pin.IN, machine.Pin.PULL_UP)  # wemos = 6
 
+pumpPin.value(1)
+
 needResetWifi = False
 
 wlan = network.WLAN(network.STA_IF)

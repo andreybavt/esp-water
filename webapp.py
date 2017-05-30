@@ -37,7 +37,7 @@ def water():
         c.execute("INSERT INTO waterActions(date, deviceid) VALUES (?,?)", [datetime.now(), device_id])
         conn.commit()
         publish.single("ABA/WIFINDULA/{0}/TO".format(device_id),
-                       json.dumps({'id': device_id, 'command': 'water', 'duration': 7}),
+                       json.dumps({'id': device_id, 'command': 'water', 'duration': 20}),
                        hostname="test.mosca.io")
         return json.dumps({'status': 'ok', 'text': 'Watered successfully!'})
 
