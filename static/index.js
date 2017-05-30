@@ -210,7 +210,8 @@ fetch('data/' + ID).then(function (response) {
 
 }).then(function (archivedData) {
     archivedData.forEach(d => {
-        data.push({date: new Date(+d.time), moisture: Math.random() * 100});
+        data.push({date: new Date(+d.time), moisture: d.moisture});
+        redraw();
     });
     console.log(data);
 });
@@ -226,7 +227,7 @@ client.on('message', function (topic, messageArray) {
     let message = new TextDecoder("utf-8").decode(messageArray);
     let msgJson = JSON.parse(message);
     // data.push({date: new Date(+msgJson.time), moisture: msgJson.moisture});
-    let item = {date: new Date(+msgJson.time), moisture: Math.random() * 100};
+    let item = {date: new Date(+msgJson.time), moisture: msgJson.moisture};
     data.push(item);
     redraw();
 });
