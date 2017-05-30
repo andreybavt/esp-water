@@ -8,12 +8,15 @@ import network
 
 # READ Startup button configuration
 ledPin = machine.Pin(2, machine.Pin.OUT, machine.Pin.PULL_UP)
+pumpPin = machine.Pin(14, machine.Pin.OUT, machine.Pin.PULL_UP)  # wemos = 5
+waterLimitPin = machine.Pin(12, machine.Pin.IN, machine.Pin.PULL_UP)  # wemos = 6
+
 needResetWifi = False
 
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 isWifiPreset = wlan.status() != network.STAT_IDLE
-print('isWifiPreset: '+str(isWifiPreset))
+print('isWifiPreset: ' + str(isWifiPreset))
 if isWifiPreset:
     for i in range(10):
         needResetWifi = machine.Pin(5, machine.Pin.IN, machine.Pin.PULL_UP).value() == 0
@@ -28,7 +31,7 @@ ID = ubinascii.hexlify(uhashlib.sha256(machine.unique_id() + 'SALTY-SALT').diges
 def normalBoot():
     import json
     import socket
-    global adc, STARTUP_TIME, time, TOPIC_FROM, TOPIC_TO, command_processor, on_message
+    global client, doWater, adc, STARTUP_TIME, time, TOPIC_FROM, TOPIC_TO, command_processor, on_message
 
     print('Normal start')
 
@@ -65,37 +68,39 @@ def normalBoot():
     TOPIC_FROM = TOPIC_BASE + "FROM"
     TOPIC_TO = TOPIC_BASE + "TO"
 
-    def sleep_my(endSleepTime):
-        while True:
-            curr = time()
-            if curr > endSleepTime:
-                break
-            yield
+    async def doWater(message):
+        print('WATERING...' + str(message))
+        pumpPin.value(0)
+        await sleep(int(message['duration']))
+        pumpPin.value(1)
+        print('END WATERING!!! ')
 
-    # print("Start waiting")
-    # for i in sleep_my(time() + 5):
-    #     pass
-    # print("End waiting")
+    def submitWater(message):
+        print("Submit water")
+        loop.create_task(doWater(message))
+        loop.create_task(pub_every(client, 1, 20))
+
     class CommandProcessor:
         def __init__(self):
             self.processors = {}
 
         def register_processor(self, command, processor):
             if command not in self.processors:
-                self.processors[command] = set()
-            self.processors[command].add(processor)
+                self.processors[command] = []
+            self.processors[command].append(processor)
 
         def get_processors(self, command):
             return self.processors[command]
 
         def process(self, command, message):
+            print('Processing {0} : {1}'.format(command, str(command in self.processors)))
+
             if command in self.processors:
                 for processor in self.processors[command]:
                     processor(message)
 
     command_processor = CommandProcessor()
-    command_processor.register_processor("measure", lambda x: print("Measuring ..."))
-    command_processor.register_processor("water", lambda x: print("Watering ..."))
+    command_processor.register_processor("water", submitWater)
 
     def on_message(topic, msg):
         message_json = json.loads(msg)
@@ -113,17 +118,25 @@ def normalBoot():
             client.check_msg()
             await sleep(0)
 
-    async def pub_every(c, interval):
-        while True:
-            message = {'id': ID, 'time': str(time()), 'moisture': adc.read()}
-            print('publish ' + str(message))
-            c.publish(TOPIC_FROM, json.dumps(message))
-            await sleep(interval)
+    async def pub_every(c, interval, iterations=-1):
+        if iterations < 0:
+            while True:
+                doPublish(c)
+                await sleep(interval)
+        else:
+            for i in range(iterations):
+                doPublish(c)
+                await sleep(interval)
+
+    def doPublish(c):
+        message = {'id': ID, 'time': str(time()), 'moisture': adc.read()}
+        print('publish ' + str(message))
+        c.publish(TOPIC_FROM, json.dumps(message))
 
     loop = get_event_loop()
     client = connect()
     loop.create_task(poll(client))
-    loop.create_task(pub_every(client, 7))
+    loop.create_task(pub_every(client, 10))
     loop.run_forever()
 
 
