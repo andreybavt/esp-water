@@ -1,8 +1,10 @@
 from flask import Flask, request, send_from_directory
 import sqlite3
+import pandas as pd
 import json
 from datetime import datetime, timedelta
 import paho.mqtt.publish as publish
+from scipy import signal
 
 conn = sqlite3.connect('messages.sqlite')
 
@@ -17,9 +19,12 @@ def root():
 @app.route("/data/<device_id>")
 def data(device_id):
     c = conn.cursor()
-    c.execute('SELECT message FROM messages WHERE deviceid = ? ORDER BY date', [device_id])
+    c.execute('SELECT message FROM messages WHERE deviceid = ? ORDER BY date DESC', [device_id])
     results = c.fetchall()
-    return json.dumps(list(map(lambda x: json.loads(x[0].decode()), results)))
+    result = list(map(lambda x: json.loads(x[0].decode()), results))
+    frame = pd.DataFrame(result, columns=['moisture', 'id', 'time'])
+    frame['moisture'] = signal.savgol_filter(frame['moisture'], 51, 3).tolist()
+    return frame.to_json(orient='records')
 
 
 @app.route("/water", methods=["POST"])
@@ -47,4 +52,4 @@ def water():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=5000)

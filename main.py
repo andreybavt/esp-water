@@ -131,7 +131,7 @@ def normalBoot():
                 await sleep(interval)
 
     def doPublish(c):
-        message = {'id': ID, 'time': str(time()), 'moisture': adc.read()}
+        message = {'id': ID, 'time': str(time()), 'moisture': 1024 - adc.read()}
         print('publish ' + str(message))
         c.publish(TOPIC_FROM, json.dumps(message))
 
