@@ -16,15 +16,17 @@ def root():
     return app.send_static_file('index.html')
 
 
-@app.route("/data/<device_id>")
-def data(device_id):
+@app.route("/data/<device_id>/<smoothing>")
+def data(device_id,smoothing):
     c = conn.cursor()
     c.execute('SELECT message FROM messages WHERE deviceid = ? ORDER BY date DESC', [device_id])
     results = c.fetchall()
-    result = list(map(lambda x: json.loads(x[0].decode()), results))
-    frame = pd.DataFrame(result, columns=['moisture', 'id', 'time'])
-    frame['moisture'] = signal.savgol_filter(frame['moisture'], 51, 3).tolist()
-    return frame.to_json(orient='records')
+    return json.dumps(list(map(lambda x: json.loads(x[0].decode()), results)))
+
+    # result = list(map(lambda x: json.loads(x[0].decode()), results))
+    # frame = pd.DataFrame(result, columns=['moisture', 'id', 'time'])
+    # frame['moisture'] = signal.savgol_filter(frame['moisture'], 51, 3).tolist()
+    # return frame.to_json(orient='records')
 
 
 @app.route("/water", methods=["POST"])

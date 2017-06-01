@@ -17,6 +17,7 @@ needResetWifi = False
 
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
+network.WLAN(network.AP_IF).active(False)
 isWifiPreset = wlan.status() != network.STAT_IDLE
 print('isWifiPreset: ' + str(isWifiPreset))
 if isWifiPreset:
@@ -147,6 +148,12 @@ if needResetWifi or not isWifiPreset:
 
     serveConnectToWifiScreen(ID)
     print('WIFI configured, starting a normal boot...')
-    normalBoot()
+    try:
+        normalBoot()
+    except:
+        machine.reset()
 else:
-    normalBoot()
+    try:
+        normalBoot()
+    except:
+        machine.reset()
