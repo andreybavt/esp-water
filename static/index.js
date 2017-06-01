@@ -234,8 +234,6 @@ client.on('message', function (topic, messageArray) {
     redraw();
 });
 
-redraw();
-
 
 let doWater = function () {
     fetch("/water", {
