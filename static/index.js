@@ -212,8 +212,9 @@ fetch('data/' + ID).then(function (response) {
     console.log(archivedData);
     archivedData.forEach(d => {
         data.push({date: new Date(+d.time), moisture: d.moisture});
-        redraw();
     });
+    redraw();
+
     console.log(data);
 });
 
