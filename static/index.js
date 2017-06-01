@@ -213,7 +213,7 @@ fetch('data/' + ID).then(function (response) {
     archivedData.forEach(d => {
         data.push({date: new Date(+d.time), moisture: d.moisture});
     });
-    data.sort((a, b) => b.date - a.date);
+    data = data.sort((a, b) => a.date - b.date);
     redraw();
 
     console.log(data);

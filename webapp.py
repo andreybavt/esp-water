@@ -7,7 +7,6 @@ import paho.mqtt.publish as publish
 from scipy import signal
 
 conn = sqlite3.connect('messages.sqlite')
-
 app = Flask(__name__, static_url_path='')
 
 
@@ -21,12 +20,14 @@ def data(device_id):
     c = conn.cursor()
     c.execute('SELECT message FROM messages WHERE deviceid = ? ORDER BY date DESC', [device_id])
     results = c.fetchall()
-    return json.dumps(list(map(lambda x: json.loads(x[0].decode()), results)))
+    # return json.dumps(list(map(lambda x: json.loads(x[0].decode()), results)))
 
-    # result = list(map(lambda x: json.loads(x[0].decode()), results))
-    # frame = pd.DataFrame(result, columns=['moisture', 'id', 'time'])
-    # frame['moisture'] = signal.savgol_filter(frame['moisture'], 51, 3).tolist()
-    # return frame.to_json(orient='records')
+    result = list(map(lambda x: json.loads(x[0].decode()), results))
+    frame = pd.DataFrame(result, columns=['moisture', 'id', 'time'])
+    print('DATA FRAME SHAPE : ' + str(frame.shape))
+    frame['moisture'] = signal.savgol_filter(frame['moisture'], frame.shape[0] if frame.shape[0] < 51 else 51,
+                                             3).tolist()
+    return frame.to_json(orient='records')
 
 
 @app.route("/water", methods=["POST"])
@@ -35,7 +36,7 @@ def water():
     # avgMoisture = float(c.fetchone())
     c = conn.cursor()
     device_id = data['id']
-    c.execute("SELECT date FROM waterActions WHERE deviceid = ? AND date > datetime('now', '-2 hour');", [device_id])
+    c.execute("SELECT date FROM waterActions WHERE deviceid = ? AND date > datetime('now', '-8 hour');", [device_id])
     results = c.fetchall()
 
     lastWaterDates = list(map(lambda x: datetime.strptime(x[0], '%Y-%m-%d %H:%M:%S.%f'), results))

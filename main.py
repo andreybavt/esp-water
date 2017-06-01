@@ -81,7 +81,7 @@ def normalBoot():
     def submitWater(message):
         print("Submit water")
         loop.create_task(doWater(message))
-        loop.create_task(pub_every(client, 1, 20))
+        loop.create_task(pub_every(client, 3, 30))
 
     class CommandProcessor:
         def __init__(self):
@@ -139,7 +139,7 @@ def normalBoot():
     loop = get_event_loop()
     client = connect()
     loop.create_task(poll(client))
-    loop.create_task(pub_every(client, 10))
+    loop.create_task(pub_every(client, 45))
     loop.run_forever()
 
 
