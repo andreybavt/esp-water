@@ -16,8 +16,8 @@ def root():
     return app.send_static_file('index.html')
 
 
-@app.route("/data/<device_id>/<smoothing>")
-def data(device_id,smoothing):
+@app.route("/data/<device_id>")
+def data(device_id):
     c = conn.cursor()
     c.execute('SELECT message FROM messages WHERE deviceid = ? ORDER BY date DESC', [device_id])
     results = c.fetchall()
