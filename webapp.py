@@ -18,7 +18,7 @@ def root():
 @app.route("/data/<device_id>")
 def data(device_id):
     c = conn.cursor()
-    c.execute('SELECT message FROM messages WHERE deviceid = ? ORDER BY date DESC', [device_id])
+    c.execute('SELECT message FROM messages WHERE deviceid = ? ORDER BY date DESC LIMIT 3000', [device_id])
     results = c.fetchall()
     # return json.dumps(list(map(lambda x: json.loads(x[0].decode()), results)))
 

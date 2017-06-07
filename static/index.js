@@ -210,7 +210,7 @@ fetch('data/' + ID).then(function (response) {
 
 }).then(function (archivedData) {
     console.log(archivedData);
-    archivedData.forEach(d => {
+    archivedData && archivedData.forEach(d => {
         data.push({date: new Date(+d.time), moisture: d.moisture});
     });
     data = data.sort((a, b) => a.date - b.date);
