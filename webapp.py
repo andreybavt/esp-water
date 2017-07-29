@@ -23,7 +23,7 @@ def data(device_id):
     # return json.dumps(list(map(lambda x: json.loads(x[0].decode()), results)))
 
     result = list(map(lambda x: json.loads(x[0].decode()), results))
-    frame = pd.DataFrame(result, columns=['moisture', 'id', 'time'])
+    frame = pd.DataFrame(result, columns=['moisture', 'id', 'time', 'outOfWater'])
     print('DATA FRAME SHAPE : ' + str(frame.shape))
     frame['moisture'] = signal.savgol_filter(frame['moisture'], frame.shape[0] if frame.shape[0] < 51 else 51,
                                              3).tolist()
@@ -55,4 +55,4 @@ def water():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=8081)

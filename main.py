@@ -8,10 +8,10 @@ import network
 
 # READ Startup button configuration
 ledPin = machine.Pin(2, machine.Pin.OUT, machine.Pin.PULL_UP)
-pumpPin = machine.Pin(14, machine.Pin.OUT, machine.Pin.PULL_UP)  # wemos = 5
-waterLimitPin = machine.Pin(12, machine.Pin.IN, machine.Pin.PULL_UP)  # wemos = 6
+pumpPin = machine.Pin(5, machine.Pin.OUT, machine.Pin.PULL_UP)
+waterLimitPin = machine.Pin(4, machine.Pin.IN, machine.Pin.PULL_UP)
 
-pumpPin.value(1)
+pumpPin.value(0)
 
 needResetWifi = False
 
@@ -22,7 +22,7 @@ isWifiPreset = wlan.status() != network.STAT_IDLE
 print('isWifiPreset: ' + str(isWifiPreset))
 if isWifiPreset:
     for i in range(10):
-        needResetWifi = machine.Pin(5, machine.Pin.IN, machine.Pin.PULL_UP).value() == 0
+        needResetWifi = machine.Pin(14, machine.Pin.IN, machine.Pin.PULL_UP).value() == 0
         ledPin.value(0)
         utime.sleep(0.1)
         ledPin.value(1)
@@ -72,11 +72,14 @@ def normalBoot():
     TOPIC_TO = TOPIC_BASE + "TO"
 
     async def doWater(message):
-        print('WATERING...' + str(message))
-        pumpPin.value(0)
-        await sleep(int(message['duration']))
-        pumpPin.value(1)
-        print('END WATERING!!! ')
+        if waterLimitPin.value() == 0:
+            print('WARNING : No water for watering, skipping ...' + str(message))
+        else:
+            print('WATERING...' + str(message))
+            pumpPin.value(1)
+            await sleep(int(message['duration']))
+            pumpPin.value(0)
+            print('END WATERING!!! ')
 
     def submitWater(message):
         print("Submit water")
@@ -132,7 +135,7 @@ def normalBoot():
                 await sleep(interval)
 
     def doPublish(c):
-        message = {'id': ID, 'time': str(time()), 'moisture': 1024 - adc.read()}
+        message = {'id': ID, 'time': str(time()), 'moisture': 1024 - adc.read(), 'outOfWater':waterLimitPin.value() == 0}
         print('publish ' + str(message))
         c.publish(TOPIC_FROM, json.dumps(message))
 
