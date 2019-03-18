@@ -84,7 +84,7 @@ def normalBoot():
     def submitWater(message):
         print("Submit water")
         loop.create_task(doWater(message))
-        loop.create_task(pub_every(client, 3, 30))
+        # loop.create_task(pub_every(client, 3, 30))
 
     class CommandProcessor:
         def __init__(self):
@@ -112,7 +112,7 @@ def normalBoot():
         message_json = json.loads(msg)
         command_processor.process(message_json['command'], message_json)
 
-    def connect(server="test.mosca.io"):
+    def connect(server="broker.hivemq.com"):
         c = MQTTClient("aba-water-sensor-" + ID, server, 1883)
         c.set_callback(on_message)
         c.connect()
@@ -142,7 +142,7 @@ def normalBoot():
     loop = get_event_loop()
     client = connect()
     loop.create_task(poll(client))
-    loop.create_task(pub_every(client, 45))
+    loop.create_task(pub_every(client, 15))
     loop.run_forever()
 
 

@@ -77,7 +77,7 @@ def main_run(ID):
         message_json = json.loads(msg)
         command_processor.process(message_json['command'], message_json)
 
-    def connect(server="broker.mqttdashboard.com"):
+    def connect(server="broker.hivemq.com"):
         print("connecting to {0}, clientid : {1}".format(server, "aba-water-sensor-" + ID))
         c = MQTTClient("aba-water-sensor-" + ID, server, 1883)
         c.set_callback(on_message)

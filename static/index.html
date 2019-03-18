@@ -1,26 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
+<meta content="width=device-width, initial-scale=1" name="viewport" />
+
 <head>
     <meta charset="UTF-8">
-    <title>Wifindula</title>
+    <title>Plantify</title>
+    <link rel="icon" href="plant-favico-16.png">
+
+    <link href="https://fonts.googleapis.com/css?family=Mali" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
-    <link href="https://fonts.googleapis.com/css?family=Indie+Flower" rel="stylesheet">
+    <!--<link href="https://fonts.googleapis.com/css?family=Indie+Flower" rel="stylesheet">-->
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
 
     <style>
+        html,body{
+            height: 100%;
+            overflow-x: hidden; 
+            overflow-y: hidden;
+        }
         .message {
             font-size: 20px;
         }
-
+        .btn-water{
+            height: 54px;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+        .main-wrapper{
+            display:flex; flex-direction:column;
+        }
+        .svg-wrapper{
+                height: 50%;
+            }
+        @media (max-height: 460px) {
+            .main-wrapper{
+                flex-direction:row;
+            }
+            .svg-wrapper{
+                width: 70%;
+                height: 80%;
+            }
+            .btn-water{
+                    width: 100%;
+            }
+        }
+        @media (max-width: 460px) {
+            
+            .btn-water{
+                    width: 40%;
+                    height: 54px;
+                    font-size: 20px;
+                }
+        }            
+        
         .message-success > code {
-            color: #06930b;
+            color: #73a62b;
             background-color: #e9ffea;
 
         }
 
         .water-container {
+            width:80%;
             text-align: center;
         }
 
@@ -33,7 +76,7 @@
         }
 
         h1, h4 {
-            font-family: 'Indie Flower', cursive;
+            font-family: 'Mali', cursive;
         }
 
         svg {
@@ -60,41 +103,76 @@
             stroke-opacity: 0.5;
             shape-rendering: crispEdges;
         }
+        .h100{
+            height: 100%;
+        }
 
     </style>
 </head>
+
 <body onload="onLoad()">
 
-<div style="display: flex; justify-content: center">
-    <div><h1 style="text-align: center">Wifindula</h1><h4 class="id"></h4></div>
-</div>
-<div style="display: flex; justify-content: center">
-    <svg width="1280" height="500"></svg>
-</div>
-<div style="display: flex; justify-content: center">
-    <div class="water-container">
-        <div style="display: flex; justify-content: center; margin-bottom: 10px;">
-        <span id="water-level-indicator"
-              style="    background-color: grey; width: 15px; height: 15px; border-radius: 50%;"
-              data-toggle="tooltip" data-placement="right" title="Water supply is unknown, wait for data..."></span>
+    <div style="display: flex; justify-content: center">
+        <div style="width:100%; padding-left: 10px; padding-right: 10px;">
+            <h1 style="text-align: center">
+                <span>Plant<span style="color: #73a62b; position: relative">i<img src="https://image.flaticon.com/icons/svg/424/424067.svg"
+                            style="position: absolute;
+    height: 10px;
+    transform: translate(-50%,-50%);
+    top: 14px;
+    left: 6px;"></span>fy</span>
+
+            </h1>
+            <h6 class="id" style="color: lightgrey;     text-overflow: ellipsis; overflow: hidden;"></h6>
         </div>
-        <button disabled class="btn btn-default" type="submit" id="btn-water" onclick="doWater()">Add water</button>
+
     </div>
-</div>
+    <div class="h100 main-wrapper">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" charset="utf-8"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.js" charset="utf-8"></script>
-<script src="https://unpkg.com/mqtt@2.8.0/dist/mqtt.js"></script>
+        <div style="display: flex; justify-content: center" class="svg-wrapper">
+            <svg></svg>
+        </div>
 
-<!-- Latest compiled and minified JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
-        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        <div style="display: flex; justify-content: center; flex:1">
+            <div class="water-container">
+                <div style="display: flex; justify-content: center; margin-bottom: 10px;">
+                    <span id="water-level-indicator" style="    background-color: grey; width: 15px; height: 15px; border-radius: 50%;"
+                        data-toggle="tooltip" data-placement="right" title="Water supply is unknown, wait for data..."></span>
+                </div>
+                <div>
+                    <h3>Watering</h3>
+                    <div class="buttons-wrapper">
+
+                        <button class="btn btn-default btn-water" type="submit" onclick="doWater(8)">
+                            <img src="https://image.flaticon.com/icons/svg/414/414974.svg" style="width: 10px">small
+                        </button>
+                        <button class="btn btn-default btn-water" type="submit" onclick="doWater(15)">
+                            <img src="https://image.flaticon.com/icons/svg/414/414974.svg" style="width: 25px">medium
+                        </button>
+                        <button class="btn btn-default btn-water" type="submit" onclick="doWater(25)">
+                            <img src="https://image.flaticon.com/icons/svg/414/414974.svg" style="width: 40px">large
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" charset="utf-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.js" charset="utf-8"></script>
+    <script src="https://unpkg.com/mqtt@2.8.0/dist/mqtt.js"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
         crossorigin="anonymous"></script>
-<script src="index.js"></script>
-<script !src="">
-    $(function () {
-        $('[data-toggle="tooltip"]').tooltip()
-    });
-</script>
+    <script src="index.js"></script>
+    <script !src="">
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        });
+    </script>
 </body>
+
 </html>
